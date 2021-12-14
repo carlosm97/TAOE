@@ -1,0 +1,19 @@
+# FIRST : Match between SExtractor and Pan-STARRS1 catalogues.
+stilts tskymatch2 in1=SEXtractor.FIT ra1=X_WORLD dec1=Y_WORLD in2=Pan_STARRS.vot ra2=RAmean dec2=Decmean join=1and2 find=best error=1 out=joint_table.vot
+# Create new column: 
+stilts tpipe ifmt=votable in=joint_table.vot cmd='addcol dm "gMeanPSFMag  -  mag_aper"' out=new_column.vot
+# alternatively 
+stilts tpipe ifmt=votable in=joint_table.vot cmd='addcol dm "rMeanPSFMag  -  mag_aper"' out=new_column.vot
+# Select stars. 
+stilts tpipe ifmt=votable in=new_column.vot cmd='select "CLASS_STAR > 0.95"' out=stars.vot
+# Plotting stars:
+stilts plot2plane layer1=mark in1=stars.vot x1=gMeanPSFMag y1=dm
+# Selecting non-saturated stars. 
+stilts tpipe ifmt=votable in=stars.vot cmd='select "gMeanPSFMag>16 && gMeanPSFMag<19 && dm>32.18 && dm<32.25"' out=good_stars.vot
+# Plotting the selection 
+stilts plot2plane layer1=mark in1=stars.vot x1=gMeanPSFMag y1=dm layer2=mark color2=blue  in2=good_stars.vot x2=gMeanPSFMag y2=dm
+# The selection is valid. We do statistics 
+stilts tpipe in=good_stars.vot omode=stats
+# We see that the mean value of dm is 32.211, with a deviatio of 0.013
+# we create a calibrated table with this value. 
+stilts tpipe ifmt=votable in=new_column.vot cmd='addcol g "mag_aper + 32.211"' out=calibrated_table.vot
