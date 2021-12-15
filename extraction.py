@@ -12,7 +12,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
+from astropy.time import Time
 os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations')
+
 # Firstly, we write the instrumental magnitude of our SN in different filters, different days
 
 SN2021aaxs_21oct_R, e_21oct_R = -11.180, 0.018
@@ -54,6 +56,7 @@ F_G_5nov_total = flux(m5_nov_G)
 F_R_13nov_total = flux(m13_nov_R) 
 F_G_13nov_total = flux(m13_nov_G) 
 del m21_oct_R,m21_oct_G,m5_nov_R,m5_nov_G,m13_nov_R,m13_nov_G
+
 # Kron photometry of the host galaxy from PanSTARSS:
 # RA, dec, radius = 128.39588031663618, 19.74125370218962, 2"
 
@@ -64,7 +67,7 @@ mR_Gal, dmR_Gal = 18.697, 0.089
 F_R_Gal = flux(mR_Gal) 
 F_G_Gal = flux(mG_Gal) 
 
-# SN aaxs flux:
+# SNaaxs flux:
 F_R_21oct_SN = F_R_21oct_total - F_R_Gal
 F_G_21oct_SN = F_G_21oct_total - F_G_Gal
 F_R_5nov_SN = F_R_5nov_total - F_R_Gal
@@ -84,40 +87,26 @@ m_G_5nov_SN = mag(F_G_5nov_SN)
 m_R_13nov_SN = mag(F_R_13nov_SN)
 m_G_13nov_SN = mag(F_G_13nov_SN)
 
-# Observation MJD: 
-oct21 = 59509
-nov5 = 59524
-nov13 = 59532
+# Observation MJD: http://www.csgnetwork.com/julianmodifdateconv.html
+#oct21 = 59509
+#nov5 = 59524
+#nov13 = 59532
 
-t21oct_G, t21oct_R = "04:59:40.856", "04:48:59.927"
-(h_R, m_R, s_R),(h_G, m_G, s_G) = t21oct_R.split(':'), t21oct_G.split(':')
-H_R, H_G = (float(h_R)+float(m_R)/60.+float(s_R)/3600.), (float(h_G)+float(m_G)/60.+float(s_G)/3600.)
-D_R, D_G = H_R/24., H_G/24.
-MJD_oct21_G, MJD_oct21_R = oct21+D_G, oct21+D_R
-del t21oct_G, t21oct_R
-
-t5nov_G, t5nov_R = "04:45:13.097", "04:55:45.132"
-(h_R, m_R, s_R),(h_G, m_G, s_G) = t5nov_R.split(':'), t5nov_G.split(':')
-H_R, H_G = (float(h_R)+float(m_R)/60.+float(s_R)/3600.), (float(h_G)+float(m_G)/60.+float(s_G)/3600.)
-D_R, D_G = H_R/24., H_G/24.
-MJD_nov51_G, MJD_nov51_R = nov5+D_G, nov5+D_R
-del t5nov_G, t5nov_R
-
-t13nov_R, t13nov_G = "05:02:28.8","05:12:57.0"
-(h_R, m_R, s_R),(h_G, m_G, s_G) = t13nov_R.split(':'), t13nov_G.split(':')
-H_R, H_G = (float(h_R)+float(m_R)/60.+float(s_R)/3600.), (float(h_G)+float(m_G)/60.+float(s_G)/3600.)
-D_R, D_G = H_R/24., H_G/24.
-MJD_nov13_G, MJD_nov13_R = nov13+D_G, nov13+D_R
-del t13nov_R, t13nov_G
-
+times = ['2021-10-22T04:59:40.856','2021-10-22T04:48:59.927',\
+         '2021-11-06T04:45:13.097','2021-11-06T04:55:45.132',\
+         '2021-11-14T05:02:28.8','2021-11-14T05:12:57.0']
+t = Time(times, format='isot', scale='utc')
+MJD_oct21_G, MJD_oct21_R, MJD_nov5_G, MJD_nov5_R, MJD_nov13_G, MJD_nov13_R =\
+    t.MJD
+    
 # Write the data to a txt file 
 try: os.remove('./SN2021aaxs_photometry.txt')
 except: pass
 tfile = open('SN2021aaxs_photometry.txt','a')
 df = pd.DataFrame({'# date_filter': ['21_oct_R','21_oct_G','5_nov_R','5_nov_G','13_nov_R','13_nov_G'],
-                   'MJD': [MJD_oct21_R,MJD_oct21_G,MJD_nov51_R,MJD_nov51_G,MJD_nov13_R,MJD_nov13_G],
+                   'MJD': [MJD_oct21_R,MJD_oct21_G,MJD_nov5_R,MJD_nov5_G,MJD_nov13_R,MJD_nov13_G],
                    'magnitude': [m_R_21oct_SN,m_G_21oct_SN,m_R_5nov_SN,m_G_5nov_SN,m_R_13nov_SN,m_G_13nov_SN],
-                   'ErroR_magnitude': [dm21_oct_R,dm21_oct_G,dm5_nov_R,dm5_nov_G,dm13_nov_R,dm13_nov_G]})
+                   'Error_magnitude': [dm21_oct_R,dm21_oct_G,dm5_nov_R,dm5_nov_G,dm13_nov_R,dm13_nov_G]})
 tfile.write(df.to_string())
 tfile.close()
 
