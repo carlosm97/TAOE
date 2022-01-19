@@ -19,11 +19,11 @@ from astropy.time import Time
 from scipy.interpolate import interp1d
 os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # ___________________________________DATA_____________________________________
-#os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
-os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
+os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
+#os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # Dias de observación
-dia = '21oct','5nov','13nov'
-#dia = ['2oct']
+#dia = '21oct','5nov','13nov'
+dia = ['2oct']
 obs_day = {'2oct':r'${{2\,Oct}}$','21oct':r'${{21\,Oct}}$',
       '5nov':r'${{5\,Nov}}$','13nov':r'${13\,Nov}$',
       '20nov':r'${{20\,Nov}}$'}
@@ -32,7 +32,7 @@ obs_day_mjd = {'2oct':59489,'21oct':59508,'5nov':59523,'13nov':59531,'20nov':595
 dias_mjd = [obs_day_mjd[d] for d in dia]
 dias = [obs_day[d] for d in dia]
 
-SN = 'aaxs'
+SN = 'zex'
 
 # ATLAS
 data_atlas=pd.read_csv('ATLAS_'+SN+'.txt',delimiter= '\s+', index_col=False,header=0)
@@ -43,7 +43,7 @@ data_ztf_nondet=pd.read_csv('non_detections.csv',delimiter= ',', index_col=False
 
 # SN data 
 
-data_r=pd.read_csv('SN'+SN+'_r.txt',delimiter= '\s+', index_col=False,header=0)
+#data_r=pd.read_csv('SN'+SN+'_r.txt',delimiter= '\s+', index_col=False,header=0)
 data_g=pd.read_csv('SN'+SN+'_g.txt',delimiter= '\s+', index_col=False,header=0)
 
 #__________________________________________________________________________________
@@ -140,12 +140,12 @@ plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magp
 
 
 # XFU nuestra
-plt.errorbar(data_r['mjd'],data_r['m'],yerr=data_r['um'],fmt='o',ls='none',color='red',label='TAOE r')
+#plt.errorbar(data_r['mjd'],data_r['m'],yerr=data_r['um'],fmt='o',ls='none',color='red',label='TAOE r')
 plt.errorbar(data_g['mjd'],data_g['m'],yerr=data_g['um'],fmt='o',ls='none',color='green',label='TAOE g')
 
 
-plt.ylim(int(2*min(np.nanmedian(data_r['m'])-3*np.std(data_r['m']),np.nanmedian(data_g['m'])-3*np.std(data_g['m'])))/2,
-         int(2*max(np.nanmedian(data_r['m'])+3*np.std(data_r['m']),np.nanmedian(data_g['m'])+3*np.std(data_g['m']))+1)/2)
+#plt.ylim(int(2*min(np.nanmedian(data_r['m'])-3*np.std(data_r['m']),np.nanmedian(data_g['m'])-3*np.std(data_g['m'])))/2,
+#         int(2*max(np.nanmedian(data_r['m'])+3*np.std(data_r['m']),np.nanmedian(data_g['m'])+3*np.std(data_g['m']))+1)/2)
 plt.gca().invert_yaxis()
 plt.grid(which='major', axis='both',alpha=0.3, linestyle='-')
 plt.setp(ax0.get_xticklabels(), visible=False)
@@ -158,10 +158,10 @@ for d in range(len(dias_mjd)):
 plt.legend(fontsize=14)
 ax0 = fig.add_subplot(spec[1,0],sharex=ax0)
 
-r=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2))
-g=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1))
+r=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1))
+g=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2))
 err=np.sqrt(data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1)**2+data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2)**2)
-x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==2) # A veces hay que cambiar a 1 o 2 para que no de problemas de interpolación. Depende del caso.
+x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==1) # A veces hay que cambiar a 1 o 2 para que no de problemas de interpolación. Depende del caso.
 x = x[x!=np.nan]
 plt.errorbar(x,g(x)-r(x),yerr=data_ztf_det['sigmapsf'],fmt='o',ls='none',markerfacecolor='white',color='black')
 
@@ -173,7 +173,7 @@ for d in data_g['mjd']:
     plt.axvline(x=d, ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
 plt.subplots_adjust(hspace=0.09)
 
-plt.savefig('light_curve_aaxs.png')
+plt.savefig('light_curve_zex.png')
 
 
 
