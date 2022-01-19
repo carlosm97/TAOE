@@ -11,7 +11,7 @@ GOAL : Graficar ATLAS + ZTF y curva de luz.
 import os
 import pandas as pd
 import numpy as np
-from matplotlib import rcParams,gridspec
+from matplotlib import gridspec#,rcParams
 import matplotlib.pylab as plt
 #plt.rcParams['text.usetex'] = True
 #import seaborn as sns
@@ -19,10 +19,11 @@ from astropy.time import Time
 from scipy.interpolate import interp1d
 os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # ___________________________________DATA_____________________________________
-
+#os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
+os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # Dias de observación
 dia = '21oct','5nov','13nov'
-
+#dia = ['2oct']
 obs_day = {'2oct':r'${{2\,Oct}}$','21oct':r'${{21\,Oct}}$',
       '5nov':r'${{5\,Nov}}$','13nov':r'${13\,Nov}$',
       '20nov':r'${{20\,Nov}}$'}
@@ -131,14 +132,16 @@ spec = gridspec.GridSpec(ncols=1, nrows=2,height_ratios=[4,1])
 ax0 = fig.add_subplot(spec[0,0])
 
 # ZTF rojo
-plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1),yerr=data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1),fmt='o',ls='none',markerfacecolor='white',color='red')
+plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1),\
+             yerr=data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1),fmt='o',ls='none',markerfacecolor='white',color='red',label='ZTF r')
 # ZTF verde
-plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2),yerr=data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2),fmt='o',ls='none',markerfacecolor='white',color='lime')
+plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2),\
+             yerr=data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2),fmt='o',ls='none',markerfacecolor='white',color='lime',label='ZTF g')
 
 
 # XFU nuestra
-plt.errorbar(data_r['mjd'],data_r['m'],yerr=data_r['um'],fmt='o',ls='none',color='red')
-plt.errorbar(data_g['mjd'],data_g['m'],yerr=data_g['um'],fmt='o',ls='none',color='green')
+plt.errorbar(data_r['mjd'],data_r['m'],yerr=data_r['um'],fmt='o',ls='none',color='red',label='TAOE r')
+plt.errorbar(data_g['mjd'],data_g['m'],yerr=data_g['um'],fmt='o',ls='none',color='green',label='TAOE g')
 
 
 plt.ylim(int(2*min(np.nanmedian(data_r['m'])-3*np.std(data_r['m']),np.nanmedian(data_g['m'])-3*np.std(data_g['m'])))/2,
@@ -149,23 +152,35 @@ plt.setp(ax0.get_xticklabels(), visible=False)
 plt.ylabel('${m}$',size=17)
 plt.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
 for d in range(len(dias_mjd)):
-    plt.axvline(x=dias_mjd[d], ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
-    plt.text(dias_mjd[d]-3,16.95, dias[d], color='black',size=14,rotation=45)
-
-
+    plt.axvline(x=data_g['mjd'][d], ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
+    plt.text(data_g['mjd'][d]-3,16.9,dias[d], color='black',size=14,rotation=45)     # parámetro a ajustar para que el texto salga bien
+    
+plt.legend(fontsize=14)
 ax0 = fig.add_subplot(spec[1,0],sharex=ax0)
 
-r=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1))
-g=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2))
+r=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2))
+g=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1))
 err=np.sqrt(data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1)**2+data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2)**2)
-x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==2)
-
+x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==2) # A veces hay que cambiar a 1 o 2 para que no de problemas de interpolación. Depende del caso.
+x = x[x!=np.nan]
 plt.errorbar(x,g(x)-r(x),yerr=data_ztf_det['sigmapsf'],fmt='o',ls='none',markerfacecolor='white',color='black')
 
 plt.grid(which='major', axis='both',alpha=0.3, linestyle='-')
 plt.xlabel('${MJD}}$',size=17)
 plt.ylabel('${(g-r)_{ZTF}}$',size=17)
 plt.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
-for d in dias_mjd:
+for d in data_g['mjd']:
     plt.axvline(x=d, ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
 plt.subplots_adjust(hspace=0.09)
+
+plt.savefig('light_curve_aaxs.png')
+
+
+
+
+
+
+
+
+
+
