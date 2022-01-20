@@ -192,7 +192,7 @@ for i in range(len(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2))):
             break
         if j==len(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1))-1:
             if data_ztf_det['mjd'].mask(data_ztf_det['fid']==2)[j]!=np.nan:
-                err.append(2*data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2)[j])
+                err.append(np.sqrt(data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2)[j]**2+np.nanmean(data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1))**2))
             else:
                 err.append(np.nan)
             
