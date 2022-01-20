@@ -52,6 +52,9 @@ L_distance = 113.575 # Mpc aaxs
 #L_distance = 135.92 # Mpc zex
 L_distance *= 1e6 # pc
 
+esp_aaxs, esp_zex = '2021-10-15T10:50:18', '2021-09-25T04:11:26'
+spc_aaxs, spc_zex = Time(esp_aaxs, format='isot', scale='utc'),Time(esp_zex, format='isot', scale='utc')
+
 #__________________________________________________________________________________
 '''
 # PRIMEIRA FIGURA. COMPARACIÓN ATLAS VS ZTF
@@ -132,6 +135,8 @@ plt.subplots_adjust(wspace=0.3)
 #%%
 # SEGUNDA GRÁFICA. CURVA DE LUZ CON LA EVOLUCIÓN DEL COLOR ABAJO__________________
 
+
+
 fig=plt.figure(figsize=(10,7))  
 spec = gridspec.GridSpec(ncols=1, nrows=2,height_ratios=[4,1])
  
@@ -149,6 +154,9 @@ plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magp
 #plt.errorbar(data_r['mjd'],data_r['m'],yerr=data_r['um'],fmt='o',ls='none',color='red',label='TAOE r')
 plt.errorbar(data_g['mjd'],data_g['m'],yerr=data_g['um'],fmt='o',ls='none',color='green',label='TAOE g')
 
+plt.axvline(x=spc_aaxs.mjd, ymin=0, ymax=1,linestyle='--',color='black',alpha=0.6)
+plt.text(spc_aaxs.mjd-3,17.35,'TNS spectrum', color='black',size=14,rotation=45) 
+
 
 #plt.ylim(int(2*min(np.nanmedian(data_r['m'])-3*np.std(data_r['m']),np.nanmedian(data_g['m'])-3*np.std(data_g['m'])))/2,
 #         int(2*max(np.nanmedian(data_r['m'])+3*np.std(data_r['m']),np.nanmedian(data_g['m'])+3*np.std(data_g['m']))+1)/2)
@@ -159,7 +167,7 @@ plt.ylabel('${m}$',size=17)
 plt.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
 for d in range(len(dias_mjd)):
     plt.axvline(x=data_g['mjd'][d], ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
-    plt.text(data_g['mjd'][d]-3,16.9,dias[d], color='black',size=14,rotation=45)     # parámetro a ajustar para que el texto salga bien
+    plt.text(data_g['mjd'][d]-3,17.35,dias[d], color='black',size=14,rotation=45)     # parámetro a ajustar para que el texto salga bien
     
 plt.legend(fontsize=14)
 ax0 = fig.add_subplot(spec[1,0],sharex=ax0)
@@ -178,6 +186,9 @@ plt.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
 for d in data_g['mjd']:
     plt.axvline(x=d, ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
 plt.subplots_adjust(hspace=0.09)
+
+
+plt.axvline(x=spc_aaxs.mjd, ymin=0, ymax=1,linestyle='--',color='black',alpha=0.6)
 
 plt.savefig('light_curve_zex.png')
 
@@ -288,7 +299,7 @@ plt.subplots_adjust(wspace=0.3)
 plt.subplots_adjust(wspace=0.3)
 #plt.yscale('log')
 plt.gca().invert_yaxis()
-plt.legend()
+plt.legend(fontsize=14)
 
 ax2=ax.twinx()
 
@@ -299,6 +310,7 @@ plt.grid(which='major', axis='both',alpha=0.3, linestyle='-')
 ax2.set_ylabel('${F(mJy)}$',size=17,rotation=270,labelpad=20)
 ax2.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
 
+plt.savefig('MACRO_LC_aaxs.png')
 
 
 
