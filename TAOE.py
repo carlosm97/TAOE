@@ -19,11 +19,11 @@ from astropy.time import Time
 from scipy.interpolate import interp1d
 os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # ___________________________________DATA_____________________________________
-os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
-#os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
+#os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
+os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # Dias de observación
-#dia = '21oct','5nov','13nov'
-dia = ['2oct']
+dia = '21oct','5nov','13nov'
+#dia = ['2oct']
 obs_day = {'2oct':r'${{2\,Oct}}$','21oct':r'${{21\,Oct}}$',
       '5nov':r'${{5\,Nov}}$','13nov':r'${13\,Nov}$',
       '20nov':r'${{20\,Nov}}$'}
@@ -32,7 +32,7 @@ obs_day_mjd = {'2oct':59489,'21oct':59508,'5nov':59523,'13nov':59531,'20nov':595
 dias_mjd = [obs_day_mjd[d] for d in dia]
 dias = [obs_day[d] for d in dia]
 
-SN = 'zex'
+SN = 'aaxs'
 
 # ATLAS
 data_atlas=pd.read_csv('ATLAS_'+SN+'.txt',delimiter= '\s+', index_col=False,header=0)
@@ -141,7 +141,7 @@ plt.subplots_adjust(wspace=0.3)
 #%%
 # SEGUNDA GRÁFICA. CURVA DE LUZ CON LA EVOLUCIÓN DEL COLOR ABAJO__________________
 
-pos_txt = 18.6
+pos_txt = 16.95
 
 fig=plt.figure(figsize=(10,7))  
 spec = gridspec.GridSpec(ncols=1, nrows=2,height_ratios=[4,1])
@@ -182,10 +182,24 @@ ax0 = fig.add_subplot(spec[1,0],sharex=ax0)
 
 r=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1))
 g=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2))
-err=np.sqrt(data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1)**2+data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2)**2)
-x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==1) # A veces hay que cambiar a 1 o 2 para que no de problemas de interpolación. Depende del caso.
+
+# Calculo del error: 
+err = []
+for i in range(len(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2))):
+    for j in range(len(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1))):
+        if abs(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2)[i]-data_ztf_det['mjd'].mask(data_ztf_det['fid']==1)[j])<1:
+            err.append(np.sqrt(data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1)[j]**2+data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2)[i]**2))
+            break
+        if j==len(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1))-1:
+            if data_ztf_det['mjd'].mask(data_ztf_det['fid']==2)[j]!=np.nan:
+                err.append(data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2)[j])
+            else:
+                err.append(np.nan)
+            
+x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==2) # A veces hay que cambiar a 1 o 2 para que no de problemas de interpolación. Depende del caso.
 x = x[x!=np.nan]
-plt.errorbar(x,g(x)-r(x),yerr=data_ztf_det['sigmapsf'],fmt='o',ls='none',markerfacecolor='white',color='black')
+
+plt.errorbar(x,g(x)-r(x),yerr=err,fmt='o',ls='none',markerfacecolor='white',color='black')
 
 plt.grid(which='major', axis='both',alpha=0.3, linestyle='-')
 plt.xlabel('${MJD}}$',size=17)
