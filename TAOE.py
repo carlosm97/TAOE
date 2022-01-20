@@ -19,11 +19,11 @@ from astropy.time import Time
 from scipy.interpolate import interp1d
 os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # ___________________________________DATA_____________________________________
-#os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
-os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
+os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
+#os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # Dias de observación
-dia = '21oct','5nov','13nov'
-#dia = ['2oct']
+#dia = '21oct','5nov','13nov'
+dia = ['2oct']
 obs_day = {'2oct':r'${{2\,Oct}}$','21oct':r'${{21\,Oct}}$',
       '5nov':r'${{5\,Nov}}$','13nov':r'${13\,Nov}$',
       '20nov':r'${{20\,Nov}}$'}
@@ -32,7 +32,7 @@ obs_day_mjd = {'2oct':59489,'21oct':59508,'5nov':59523,'13nov':59531,'20nov':595
 dias_mjd = [obs_day_mjd[d] for d in dia]
 dias = [obs_day[d] for d in dia]
 
-SN = 'aaxs'
+SN = 'zex'
 
 # ATLAS
 data_atlas=pd.read_csv('ATLAS_'+SN+'.txt',delimiter= '\s+', index_col=False,header=0)
@@ -43,17 +43,23 @@ data_ztf_nondet=pd.read_csv('non_detections.csv',delimiter= ',', index_col=False
 
 # SN data 
 
-data_r=pd.read_csv('SN'+SN+'_r.txt',delimiter= '\s+', index_col=False,header=0)
+try: data_r=pd.read_csv('SN'+SN+'_r.txt',delimiter= '\s+', index_col=False,header=0)
+except: pass
 data_g=pd.read_csv('SN'+SN+'_g.txt',delimiter= '\s+', index_col=False,header=0)
 
 # Distancia 
 
-L_distance = 113.575 # Mpc aaxs
-#L_distance = 135.92 # Mpc zex
+#L_distance = 113.575 # Mpc aaxs
+L_distance = 135.92 # Mpc zex
 L_distance *= 1e6 # pc
 
 esp_aaxs, esp_zex = '2021-10-15T10:50:18', '2021-09-25T04:11:26'
 spc_aaxs, spc_zex = Time(esp_aaxs, format='isot', scale='utc'),Time(esp_zex, format='isot', scale='utc')
+
+if SN=='aaxs':
+    spc=spc_aaxs
+elif SN=='zex':
+    spc=spc_zex
 
 #__________________________________________________________________________________
 '''
@@ -135,7 +141,7 @@ plt.subplots_adjust(wspace=0.3)
 #%%
 # SEGUNDA GRÁFICA. CURVA DE LUZ CON LA EVOLUCIÓN DEL COLOR ABAJO__________________
 
-
+pos_txt = 18.6
 
 fig=plt.figure(figsize=(10,7))  
 spec = gridspec.GridSpec(ncols=1, nrows=2,height_ratios=[4,1])
@@ -151,15 +157,17 @@ plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magp
 
 
 # XFU nuestra
-#plt.errorbar(data_r['mjd'],data_r['m'],yerr=data_r['um'],fmt='o',ls='none',color='red',label='TAOE r')
+try: plt.errorbar(data_r['mjd'],data_r['m'],yerr=data_r['um'],fmt='o',ls='none',color='red',label='TAOE r')
+except: pass
 plt.errorbar(data_g['mjd'],data_g['m'],yerr=data_g['um'],fmt='o',ls='none',color='green',label='TAOE g')
 
-plt.axvline(x=spc_aaxs.mjd, ymin=0, ymax=1,linestyle='--',color='black',alpha=0.6)
-plt.text(spc_aaxs.mjd-3,17.35,'TNS spectrum', color='black',size=14,rotation=45) 
+plt.axvline(x=spc.mjd, ymin=0, ymax=1,linestyle='--',color='black',alpha=0.6)
+plt.text(spc.mjd-3,pos_txt,'TNS spectrum', color='black',size=14,rotation=45) 
 
 
-#plt.ylim(int(2*min(np.nanmedian(data_r['m'])-3*np.std(data_r['m']),np.nanmedian(data_g['m'])-3*np.std(data_g['m'])))/2,
-#         int(2*max(np.nanmedian(data_r['m'])+3*np.std(data_r['m']),np.nanmedian(data_g['m'])+3*np.std(data_g['m']))+1)/2)
+try: plt.ylim(int(2*min(np.nanmedian(data_r['m'])-3*np.std(data_r['m']),np.nanmedian(data_g['m'])-3*np.std(data_g['m'])))/2,
+         int(2*max(np.nanmedian(data_r['m'])+3*np.std(data_r['m']),np.nanmedian(data_g['m'])+3*np.std(data_g['m']))+1)/2)
+except: pass
 plt.gca().invert_yaxis()
 plt.grid(which='major', axis='both',alpha=0.3, linestyle='-')
 plt.setp(ax0.get_xticklabels(), visible=False)
@@ -167,7 +175,7 @@ plt.ylabel('${m}$',size=17)
 plt.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
 for d in range(len(dias_mjd)):
     plt.axvline(x=data_g['mjd'][d], ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
-    plt.text(data_g['mjd'][d]-3,17.35,dias[d], color='black',size=14,rotation=45)     # parámetro a ajustar para que el texto salga bien
+    plt.text(data_g['mjd'][d]-3,pos_txt,dias[d], color='black',size=14,rotation=45)     # parámetro a ajustar para que el texto salga bien
     
 plt.legend(fontsize=14)
 ax0 = fig.add_subplot(spec[1,0],sharex=ax0)
@@ -175,7 +183,7 @@ ax0 = fig.add_subplot(spec[1,0],sharex=ax0)
 r=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1))
 g=interp1d(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2))
 err=np.sqrt(data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1)**2+data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2)**2)
-x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==2) # A veces hay que cambiar a 1 o 2 para que no de problemas de interpolación. Depende del caso.
+x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==1) # A veces hay que cambiar a 1 o 2 para que no de problemas de interpolación. Depende del caso.
 x = x[x!=np.nan]
 plt.errorbar(x,g(x)-r(x),yerr=data_ztf_det['sigmapsf'],fmt='o',ls='none',markerfacecolor='white',color='black')
 
@@ -188,11 +196,11 @@ for d in data_g['mjd']:
 plt.subplots_adjust(hspace=0.09)
 
 
-plt.axvline(x=spc_aaxs.mjd, ymin=0, ymax=1,linestyle='--',color='black',alpha=0.6)
+plt.axvline(x=spc.mjd, ymin=0, ymax=1,linestyle='--',color='black',alpha=0.6)
 
-plt.savefig('light_curve_zex.png')
+plt.savefig('light_curve_'+SN+'.png')
 
-
+'''
 #%% Light curve with ATLAS 
 
 # ZTF
@@ -235,13 +243,11 @@ for d in range(len(dias_mjd)):
     plt.axvline(x=data_g['mjd'][d], ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
     plt.text(data_g['mjd'][d]-3,16.95,dias[d], color='black',size=14,rotation=45)     # parámetro a ajustar para que el texto salga bien
     
-esp_aaxs, esp_zex = '2021-10-15T10:50:18', '2021-09-25T04:11:26'
-spc_aaxs, spc_zex = Time(esp_aaxs, format='isot', scale='utc'),Time(esp_zex, format='isot', scale='utc')
 
 
-plt.axvline(x=spc_aaxs.mjd, ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
-plt.text(spc_aaxs.mjd-3,16.95,'TNS spectrum', color='black',size=14,rotation=45) 
-
+plt.axvline(x=spc.mjd, ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
+plt.text(spc.mjd-3,16.95,'TNS spectrum', color='black',size=14,rotation=45) 
+'''
 #%%
 
 
@@ -270,16 +276,19 @@ plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),G_ZTF,yerr=data_zt
 plt.plot(data_ztf_nondet['mjd'].mask(data_ztf_nondet['fid']==2),G_nd_ZTF,'v',color='lime',alpha=0.5)
 plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),R_ZTF,yerr=data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1),fmt='o',ls='none',color='red',label='Red ZTF')
 plt.plot(data_ztf_nondet['mjd'].mask(data_ztf_nondet['fid']==1),R_nd_ZTF,'v',color='red',alpha=0.5)
-plt.ylim(-16,-18)
+plt.ylim(-15.5,-17.75)
 plt.xlim(59470,59600)
 plt.gca().invert_yaxis()
 
 
 # TAOE
-G_TAOE,R_TAOE = data_g['m']+5-5*np.log10(L_distance),data_r['m']+5-5*np.log10(L_distance)
+try:
+    G_TAOE,R_TAOE = data_g['m']+5-5*np.log10(L_distance),data_r['m']+5-5*np.log10(L_distance)
+except: 
+    G_TAOE= data_g['m']+5-5*np.log10(L_distance)
 plt.errorbar(data_g['mjd'],G_TAOE,yerr=data_g['um'],fmt='o',ls='none',color='green',label='TAOE g')
-plt.errorbar(data_r['mjd'],R_TAOE,yerr=data_r['um'],fmt='o',ls='none',color='m',label='TAOE r')
-
+try: plt.errorbar(data_r['mjd'],R_TAOE,yerr=data_r['um'],fmt='o',ls='none',color='m',label='TAOE r')
+except: pass
 
 
 plt.grid(which='major', axis='both',alpha=0.3, linestyle='-')
@@ -294,7 +303,7 @@ plt.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
 
 for d in range(len(dias_mjd)):
     plt.axvline(x=data_g['mjd'][d], ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.5)
-    plt.text(dias_mjd[d]-3,-18.05, dias[d], color='black',size=14,rotation=45)
+    plt.text(data_g['mjd'][d]-3,-17.8, dias[d], color='black',size=14,rotation=45)
 plt.subplots_adjust(wspace=0.3)
 plt.subplots_adjust(wspace=0.3)
 #plt.yscale('log')
@@ -310,7 +319,7 @@ plt.grid(which='major', axis='both',alpha=0.3, linestyle='-')
 ax2.set_ylabel('${F(mJy)}$',size=17,rotation=270,labelpad=20)
 ax2.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
 
-plt.savefig('MACRO_LC_aaxs.png')
+plt.savefig('MACRO_LC_'+SN+'.png')
 
 
 
