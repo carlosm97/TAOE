@@ -19,11 +19,11 @@ from astropy.time import Time
 from scipy.interpolate import interp1d
 os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # ___________________________________DATA_____________________________________
-#os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
-os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
+os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
+#os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # Dias de observación
-dia = '21oct','5nov','13nov'
-#dia = ['2oct']
+#dia = '21oct','5nov','13nov'
+dia = ['2oct']
 obs_day = {'2oct':r'${{2\,Oct}}$','21oct':r'${{21\,Oct}}$',
       '5nov':r'${{5\,Nov}}$','13nov':r'${13\,Nov}$',
       '20nov':r'${{20\,Nov}}$'}
@@ -32,7 +32,7 @@ obs_day_mjd = {'2oct':59489,'21oct':59508,'5nov':59523,'13nov':59531,'20nov':595
 dias_mjd = [obs_day_mjd[d] for d in dia]
 dias = [obs_day[d] for d in dia]
 
-SN = 'aaxs'
+SN = 'zex'
 
 # ATLAS
 data_atlas=pd.read_csv('ATLAS_'+SN+'.txt',delimiter= '\s+', index_col=False,header=0)
@@ -196,7 +196,7 @@ for i in range(len(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2))):
             else:
                 err.append(np.nan)
             
-x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==2) # A veces hay que cambiar a 1 o 2 para que no de problemas de interpolación. Depende del caso.
+x=data_ztf_det['mjd'].mask(data_ztf_det['fid']==1) # A veces hay que cambiar a 1 o 2 para que no de problemas de interpolación. Depende del caso.
 x = x[x!=np.nan]
 
 plt.errorbar(x,g(x)-r(x),yerr=err,fmt='o',ls='none',markerfacecolor='white',color='black')
@@ -263,8 +263,9 @@ plt.axvline(x=spc.mjd, ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.6)
 plt.text(spc.mjd-3,16.95,'TNS spectrum', color='black',size=14,rotation=45) 
 '''
 #%%
-
-
+# corrección de extinción galáctica (da LASAIR)
+corr_r = 0.102
+corr_g = 0.148
 
 def F_J(m):
     return 10.**(-0.4*(m-23.9))
@@ -283,23 +284,23 @@ plt.errorbar(data_atlas['###MJD'].mask(data_atlas['F']=='c'),O,yerr=data_atlas['
 # plt.errorbar(data_atlas['###MJD'].mask(data_atlas['F']=='o'),data_atlas['m'].mask(data_atlas['F']=='o'),yerr=data_atlas['dm'].mask(data_atlas['F']=='o'),fmt='o',markersize=5,ls='none',color='cyan',label='Cyan')
 
 # ZTF
-G_ZTF,R_ZTF = data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2)+5-5*np.log10(L_distance),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1)+5-5*np.log10(L_distance)
-G_nd_ZTF, R_nd_ZTF = data_ztf_nondet['diffmaglim'].mask(data_ztf_nondet['fid']==2)+5-5*np.log10(L_distance),data_ztf_nondet['diffmaglim'].mask(data_ztf_nondet['fid']==1)+5-5*np.log10(L_distance)
+G_ZTF,R_ZTF = data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2)+5-5*np.log10(L_distance)-corr_g,data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1)+5-5*np.log10(L_distance)-corr_r
+G_nd_ZTF, R_nd_ZTF = data_ztf_nondet['diffmaglim'].mask(data_ztf_nondet['fid']==2)+5-5*np.log10(L_distance)-corr_g,data_ztf_nondet['diffmaglim'].mask(data_ztf_nondet['fid']==1)+5-5*np.log10(L_distance)-corr_r
 
 plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),G_ZTF,yerr=data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2),fmt='o',ls='none',color='lime',label='Green ZTF')
 plt.plot(data_ztf_nondet['mjd'].mask(data_ztf_nondet['fid']==2),G_nd_ZTF,'v',color='lime',alpha=0.5)
 plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),R_ZTF,yerr=data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==1),fmt='o',ls='none',color='red',label='Red ZTF')
 plt.plot(data_ztf_nondet['mjd'].mask(data_ztf_nondet['fid']==1),R_nd_ZTF,'v',color='red',alpha=0.5)
-plt.ylim(-15.5,-17.75)
+plt.ylim(-15.,-17.15)
 plt.xlim(59470,59600)
 plt.gca().invert_yaxis()
 
 
 # TAOE
 try:
-    G_TAOE,R_TAOE = data_g['m']+5-5*np.log10(L_distance),data_r['m']+5-5*np.log10(L_distance)
+    G_TAOE,R_TAOE = data_g['m']+5-5*np.log10(L_distance)-corr_g,data_r['m']+5-5*np.log10(L_distance)-corr_r
 except: 
-    G_TAOE= data_g['m']+5-5*np.log10(L_distance)
+    G_TAOE= data_g['m']+5-5*np.log10(L_distance)-corr_g
 plt.errorbar(data_g['mjd'],G_TAOE,yerr=data_g['um'],fmt='o',ls='none',color='green',label='TAOE g')
 try: plt.errorbar(data_r['mjd'],R_TAOE,yerr=data_r['um'],fmt='o',ls='none',color='m',label='TAOE r')
 except: pass
@@ -317,7 +318,7 @@ plt.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
 
 for d in range(len(dias_mjd)):
     plt.axvline(x=data_g['mjd'][d], ymin=0, ymax=1,linestyle='-.',color='black',alpha=0.5)
-    plt.text(data_g['mjd'][d]-3,-17.8, dias[d], color='black',size=14,rotation=45)
+    plt.text(data_g['mjd'][d]-3,-17.2, dias[d], color='black',size=14,rotation=45)
 plt.subplots_adjust(wspace=0.3)
 plt.subplots_adjust(wspace=0.3)
 #plt.yscale('log')
