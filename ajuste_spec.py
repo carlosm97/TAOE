@@ -20,7 +20,7 @@ from scipy.interpolate import interp1d
 from astropy.io import ascii
 
 os.chdir("/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/SN_LC")
-SN = 'zex'
+SN = 'aaxs'
 if SN == 'aaxs':
     spec = ascii.read('tns_2021aaxs.ascii')
     z = 0.026
@@ -37,6 +37,9 @@ sn2n = pd.read_csv('sn2n_flux.v2.1.dat',delimiter= '\s+',index_col=False,header=
 plt.close('all')
 plt.figure(),plt.grid()
 
+spec['flux'] /=np.nanmax(spec['flux'])
+
+
 plt.plot(spec['lambda'],spec['flux'])
 plt.xlim(np.nanmin(spec['lambda']),np.nanmax(spec['lambda']))
 0,1,6,11,16,21,36
@@ -50,13 +53,10 @@ plt.plot(sn2p['lambda'][sn2p['day']==d],\
 plt.plot(sn2l['lambda'][sn2l['day']==d],\
          sn2l['flux'][sn2l['day']==d]/np.nanmax(sn2l['flux'][sn2l['day']==d])*np.nanmax(spec['flux']),\
          label='SN IIl '+str(d)+' days',alpha=0.5)
-plt.ylabel('$Flux [mJy]$',size=17),plt.xlabel('$\lambda [\AA]$',size=17)
+plt.ylabel('Relative flux',size=17),plt.xlabel('$\lambda [\AA]$',size=17)
 plt.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
     
-
-
-
-plt.legend()
+plt.legend(fontsize=14)
 plt.show()
 
 

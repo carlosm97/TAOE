@@ -19,9 +19,9 @@ os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
 # ___________________________________DATA_____________________________________
 # Cargamos los datos y modelos 
 
-#os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
-os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
-SN = 'aaxs'
+os.chdir('/home/carlos/Desktop/MSc/Segundo/TAOE/Observations/zex')
+#os.chdir('/home/carlos/Desktop/PRUEBAS_TAOE')
+SN = 'zex'
 
 # SN data 
 try: data_r=pd.read_csv('SN'+SN+'_r.txt',delimiter= '\s+', index_col=False,header=0)
@@ -64,9 +64,9 @@ sn2n['m'] /= np.nanmax(sn2n['m'])
 # Buscamos un primer ajuste "automático" a la LC.
 plt.close('all')
 #fig=plt.figure(figsize=(10,7))  
-spec = gridspec.GridSpec(ncols=1, nrows=2,height_ratios=[4,1])
- 
-ax0 = fig.add_subplot(spec[0,0])
+#spec = gridspec.GridSpec(ncols=1, nrows=2,height_ratios=[3,1])
+#fig=plt.figure(figsize=(10,7))  
+#ax0 = fig.add_subplot(spec[0,0])
 plt.gca().invert_yaxis()
 plt.grid()
 # ZTF rojo
@@ -75,26 +75,38 @@ plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==1),data_ztf_det['magp
 # ZTF verde
 plt.errorbar(data_ztf_det['mjd'].mask(data_ztf_det['fid']==2),data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2),\
              yerr=data_ztf_det['sigmapsf'].mask(data_ztf_det['fid']==2),fmt='o',ls='none',markerfacecolor='white',color='lime',label='ZTF g')
-
+# ATLAS
+# Filtro naranja
+plt.errorbar(data_atlas['###MJD'].mask(data_atlas['F']=='o'),data_atlas['m'].mask(data_atlas['F']=='o'),markerfacecolor='white',\
+             yerr=data_atlas['dm'],fmt='o',markersize=5,ls='none',color='cyan',label='ATLAS Cyan')
+# Filtro cyan
+plt.errorbar(data_atlas['###MJD'].mask(data_atlas['F']=='c'),data_atlas['m'].mask(data_atlas['F']=='c'),markerfacecolor='white',\
+             yerr=data_atlas['dm'],fmt='o',markersize=5,ls='none',color='darkorange',label='ATLAS Orange')
+    
+    
+    
+    
 # TAOE
 try: plt.errorbar(data_r['mjd'],data_r['m'],yerr=data_r['um'],fmt='o',ls='none',color='red',label='TAOE r')
 except: pass
 plt.errorbar(data_g['mjd'],data_g['m'],yerr=data_g['um'],fmt='o',ls='none',color='green',label='TAOE g')
     
 ref_magnitude = min(np.nanmin(data_ztf_det['magpsf'].mask(data_ztf_det['fid']==1)),np.nanmin(data_ztf_det['magpsf'].mask(data_ztf_det['fid']==2)))
-ref_MJD = data_ztf_det['mjd'][data_ztf_det['magpsf']==ref_magnitude]
+ref_MJD = data_ztf_det['mjd'][data_ztf_det['magpsf']==ref_magnitude]-50
+
+
 
 plt.plot(sn2l['d']+float(ref_MJD),sn2l['m']+ref_magnitude,label='SN IIl V')
 plt.plot(sn2p['d']+float(ref_MJD),sn2p['m']+ref_magnitude,label='SN IIp V')
 plt.plot(sn2n['d']+float(ref_MJD)-20,sn2n['m']+ref_magnitude,label='SN IIn V')
-plt.ylabel('${m}$',size=17),plt.xlabel('${MJD}$',size=17)
+plt.ylabel('Relative magnitude [mag]',size=17),plt.xlabel('${MJD}$',size=17)
 plt.tick_params(length=4, width=0.8, top=False, right=False, labelsize=14)
-plt.legend(fontsize=14)
+plt.legend(fontsize=14,loc=[0.,0.55],framealpha=0.3)
 
 plt.ylim(np.nanmax(data_ztf_det['magpsf'])+0.5,np.nanmin(data_ztf_det['magpsf'])-0.5)
 plt.xlim(np.nanmin(data_ztf_det['mjd'])-10,np.nanmax(data_ztf_det['mjd'])+10)
-
-
+plt.show()
+# Si hay puntos raros y no se ajusta, tendremos que hacer el "ajuste" a mano.
 
 
 
